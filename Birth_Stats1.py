@@ -43,35 +43,38 @@ class InteractivePlotter(Tk):
         self.plot_span = 10
             
 
-        # Creating the buttons
+        # Creating the checkbuttons
         for i in range(len(self.orders)):
             self.order_vars.append(IntVar())
             temp_button = ttk.Checkbutton(self, text=self.orders[i], command = self.update_plot, variable = self.order_vars[i])
             self.age_plot_toggles.append(temp_button)
 
-        # Test Data
-        data1 = {'year': ['1970', '1980', '1990', '2000', '2010'],
-         'births': [45000, 42000, 52000, 49000, 47000]
-         }
-        self.birthsdf = pd.DataFrame(data1)
-
-        self.births_notmill = self.birthsdf[(self.birthsdf['year'] != '2000')]
-        
-
 
     def update_plot(self):
         # This function will update the chart to include the active plots
-        print("plot updated")
-        # print(self.birthsdf.head())
-        chart = FigureCanvasTkAgg(self.figure,self)
-        chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
-        self.births_notmill.plot(kind='line', legend=True, ax=self.ax1)
+        print("updating plot")
+        
+        # Clear the figure
+        self.figure.clf()
 
-        for i in range(len(self.order_vars)):
+        # Update the figure canvas
+        self.chart = FigureCanvasTkAgg(self.figure,self)
+        self.chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
+        
+        # Update the axis with a subplot
+        self.ax1 = self.figure.add_subplot(111)
+        
+        # Create the ax properties
+        self.legend_list = []
+
+        # Plot data if the checkbox is selected
+        for i in range(len(self.age_plot_toggles)):
             
-            if self.order_vars[i].get():
-                print(self.orders[i])
-                # plt.plot(Data[i].Year, Data[i].Birth)
+            if 'selected' in self.age_plot_toggles[i].state():
+                self.all_data[i].plot('Year', 'Births', kind='line', legend=True, ax=self.ax1) 
+                self.legend_list.append(self.orders[i])
+                self.ax1.legend(self.legend_list)
+                
 
 
     def make_window(self):
@@ -88,37 +91,32 @@ class InteractivePlotter(Tk):
         self.figure = plt.Figure(figsize=(6,5), dpi=100)
         self.ax1 = self.figure.add_subplot(111)
         self.ax1.set_title('Births per Year')
+        self.chart = FigureCanvasTkAgg(self.figure,self)
+        self.chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
+
 
         # Create a button to insert plot (temporary)
-        self.test_button = Button(self, text="Test", command = self.insert_plot)
-        print("Button is created")
-        test_colomn = self.age_plot_column + self.plot_span + 1
-        test_row = self.age_plot_row + self.plot_span + 1
-        self.test_button.grid(column = test_colomn, row = test_row)
+        # self.test_button = Button(self, text="Test", command = self.insert_plot)
+        # print("Button is created")
+        # test_colomn = self.age_plot_column + self.plot_span + 1
+        # test_row = self.age_plot_row + self.plot_span + 1
+        # self.test_button.grid(column = test_colomn, row = test_row)
 
-    def make_plot_data(self, Births):
+    def make_plot_data(self, birth_df):
+
+        self.all_data = []
+
+        for i in range(len(self.orders)):
+            self.all_data.append(birth_df[(birth_df['Birth Order'] == self.orders[i]) & (birth_df['Age Group'] == 'All ages')])
+
 
         # Create sub-dataframes for separate age plots
-        First = Births[(Births['Birth Order'] == '1st Born') & (Births['Age Group'] == ages[age])]
-        Second = Births[(Births['Birth Order'] == '2nd Born') & (Births['Age Group'] == ages[age])]
-        Third = Births[(Births['Birth Order'] == '3rd Born') & (Births['Age Group'] == ages[age])]
-        Fourth = Births[(Births['Birth Order'] == '4th Born') & (Births['Age Group'] == ages[age])]
-        Fifth = Births[(Births['Birth Order'] == '5th Born') & (Births['Age Group'] == ages[age])]
-        Sixth = Births[(Births['Birth Order'] == '6th Born') & (Births['Age Group'] == ages[age])]
-
-        # Plot separate age dataframes
-        plt.figure(figsize=(6,4))
-        plt.plot(First.Year, First.Births, '.:r')
-        plt.plot(Second.Year, Second.Births, '.:b')
-        plt.plot(Third.Year, Third.Births, '.:g')
-        plt.plot(Fourth.Year, Fourth.Births, '.:y')
-        plt.plot(Fifth.Year, Fifth.Births, '.:')
-        plt.plot(Sixth.Year, Sixth.Births, '.:')
-        plt.title("Births per Year by Birth Order")
-        plt.xlabel("Year")
-        plt.ylabel("Births")
-        plt.grid()
-        plt.show()
+        # First = Births[(Births['Birth Order'] == '1st Born') & (Births['Age Group'] == ages[age])]
+        # Second = Births[(Births['Birth Order'] == '2nd Born') & (Births['Age Group'] == ages[age])]
+        # Third = Births[(Births['Birth Order'] == '3rd Born') & (Births['Age Group'] == ages[age])]
+        # Fourth = Births[(Births['Birth Order'] == '4th Born') & (Births['Age Group'] == ages[age])]
+        # Fifth = Births[(Births['Birth Order'] == '5th Born') & (Births['Age Group'] == ages[age])]
+        # Sixth = Births[(Births['Birth Order'] == '6th Born') & (Births['Age Group'] == ages[age])]
 
         if False:
             # Ask user for desired birth order
@@ -147,40 +145,39 @@ class InteractivePlotter(Tk):
             plt.grid()
             plt.show()
 
-    def insert_plot(self):
-        print("inserting plot")
-        # for now, insert a random plot on the frame
-        data1 = {'country': ['A', 'B', 'C', 'D', 'E'],
-         'gdp_per_capita': [45000, 42000, 52000, 49000, 47000]
-         }
-        df1 = pd.DataFrame(data1)
-        chart = FigureCanvasTkAgg(self.figure,self)
-        chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
-        df1 = df1[['country', 'gdp_per_capita']].groupby('country').sum()
-        df1.plot(kind='bar', legend=True, ax=self.ax1)
-        
+    def load_data(self, file_loc):
+        # Read in the .csv data
+        return pd.read_csv(file_loc)
 
-### Functions ### 
+    def create_dataframe(self):
+        # Melt the age columns into rows
+        Births = pd.melt(self.load_data(file_location), 
+                                id_vars=['Year', 'Birth Order'],
+                                value_vars=['All ages','Under 15', '15-19', '15-17', '18-19', '15', '16', '17', '18', '19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54'],
+                                var_name='Age Group',
+                                value_name='str_Births')
 
-def load_data(file_loc):
-    # Read in the .csv data
-    return pd.read_csv(file_loc)
+        # Change Births data type to int
+        Births['Births'] = pd.to_numeric(Births.str_Births, downcast="integer")
 
-def create_dataframe():
-    # Melt the age columns into rows
-    Births = pd.melt(load_data(file_location), 
-                            id_vars=['Year', 'Birth Order'],
-                            value_vars=['All ages','Under 15', '15-19', '15-17', '18-19', '15', '16', '17', '18', '19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54'],
-                            var_name='Age Group',
-                            value_name='str_Births')
+        # Remove the str_Births column
+        Births.drop(labels=['str_Births'], axis=1, inplace=True)
 
-    # Change Births data type to int
-    Births['Births'] = pd.to_numeric(Births.str_Births, downcast="integer")
 
-    # Remove the str_Births column
-    Births.drop(labels=['str_Births'], axis=1, inplace=True)
+        return Births
 
-    return Births
+    # def insert_plot(self):
+    #     print("inserting plot")
+    #     # for now, insert a random plot on the frame
+    #     data1 = {'country': ['A', 'B', 'C', 'D', 'E'],
+    #      'gdp_per_capita': [45000, 42000, 52000, 49000, 47000]
+    #      }
+    #     df1 = pd.DataFrame(data1)
+    #     chart = FigureCanvasTkAgg(self.figure,self)
+    #     chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
+    #     df1 = df1[['country', 'gdp_per_capita']].groupby('country').sum()
+    #     df1.plot(kind='bar', legend=True, ax=self.ax1)
+
 
 if __name__ == "__main__":
 
@@ -189,7 +186,7 @@ if __name__ == "__main__":
     window = InteractivePlotter()
     print("main after make_window")
     window.make_window()
-    # window.insert_plot()
+    window.make_plot_data(window.create_dataframe())
 
 
     window.mainloop()
