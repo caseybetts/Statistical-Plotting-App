@@ -28,14 +28,14 @@ class InteractivePlotter(Tk):
 
         # Define window attributes
         self.title("Birth Stats Plotter")
-        self.geometry("1000x600")
+        self.geometry("1300x800")
         self.gridWidth = 11
         self.gridHeight = 11
 
         # Define widget properties
         self.age_plot_toggles = [] # A list of radio buttons
         self.orders = ['Total', '1st Born', '2nd Born', '3rd Born', '4th Born', '5th Born', '6th Born', '7th Born', '8th child and over', 'Not Stated']
-        self.order_vars = []
+        self.checkbutton_vars = []
         self.age_toggle_top_row = 2
         self.toggle_column = 0
         self.age_plot_row = self.toggle_column + 1
@@ -45,14 +45,16 @@ class InteractivePlotter(Tk):
 
         # Creating the checkbuttons
         for i in range(len(self.orders)):
-            self.order_vars.append(IntVar())
-            temp_button = ttk.Checkbutton(self, text=self.orders[i], command = self.update_plot, variable = self.order_vars[i])
+            self.checkbutton_vars.append(IntVar())
+            temp_button = ttk.Checkbutton(self, text=self.orders[i], command = self.update_plot, variable = self.checkbutton_vars[-1])
             self.age_plot_toggles.append(temp_button)
+
+        self.checkbutton_vars.append(IntVar())
+        self.bottom_at_zero = ttk.Checkbutton(self, text="zoom y-axix", command = self.update_plot, variable = self.checkbutton_vars[-1])
 
 
     def update_plot(self):
         # This function will update the chart to include the active plots
-        print("updating plot")
         
         # Clear the figure
         self.figure.clf()
@@ -74,6 +76,9 @@ class InteractivePlotter(Tk):
                 self.all_data[i].plot('Year', 'Births', kind='line', legend=True, ax=self.ax1) 
                 self.legend_list.append(self.orders[i])
                 self.ax1.legend(self.legend_list)
+
+                if 'selected' not in self.bottom_at_zero.state():
+                    self.ax1.set_ylim(bottom=0)
                 
 
 
@@ -87,20 +92,16 @@ class InteractivePlotter(Tk):
             radiobutton.grid(column=0, row=i)
             i+=1
 
+        # Placing the bottom-at-zero checkbox
+        self.bottom_at_zero.grid(column = 0, row=0)
+
         # Create the space for the plots
-        self.figure = plt.Figure(figsize=(6,5), dpi=100)
+        self.figure = plt.Figure(figsize=(11,5), dpi=100)
         self.ax1 = self.figure.add_subplot(111)
         self.ax1.set_title('Births per Year')
         self.chart = FigureCanvasTkAgg(self.figure,self)
         self.chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
 
-
-        # Create a button to insert plot (temporary)
-        # self.test_button = Button(self, text="Test", command = self.insert_plot)
-        # print("Button is created")
-        # test_colomn = self.age_plot_column + self.plot_span + 1
-        # test_row = self.age_plot_row + self.plot_span + 1
-        # self.test_button.grid(column = test_colomn, row = test_row)
 
     def make_plot_data(self, birth_df):
 
