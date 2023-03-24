@@ -13,7 +13,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 file_location = "Pop Stats - Numeric Data.csv"
 
 # Create list for ages and birth orders
-ages = ['Under 15', '15-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54']
+ages = ['All ages', 'Under 15', '15-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54']
 orders = ['Total', '1st Born', '2nd Born', '3rd Born', '4th Born', '5th Born', '6th Born', '7th Born', '8th child and over', 'Not Stated']
 birth_plots = ['age', 'order']
 
@@ -28,40 +28,59 @@ class InteractivePlotter(Tk):
 
         # Define window attributes
         self.title("Birth Stats Plotter")
-        self.geometry("1300x800")
+        self.geometry("1100x600")
         self.gridWidth = 11
         self.gridHeight = 11
 
         # Define widget properties
-        self.age_plot_toggles = [] # A list of radio buttons
-        self.orders = ['Total', '1st Born', '2nd Born', '3rd Born', '4th Born', '5th Born', '6th Born', '7th Born', '8th child and over', 'Not Stated']
-        self.checkbutton_vars = []
-        self.age_toggle_top_row = 2
-        self.toggle_column = 0
-        self.age_plot_row = self.toggle_column + 1
-        self.age_plot_column = self.age_toggle_top_row
+        self.age_graph_toggles = []     # A list of Radio buttons for changing age of the graph
+        self.age_plot_toggles = []      # A list of check buttons for changing plotted data
         self.plot_span = 10
+        self.age_radio_var = IntVar()
+
+        # Define rows and columns
+        self.title_start_row = 0
+        self.section1_start_row = 1     # Options
+        self.section2_start_row = 2     # Age Radio Buttons
+        self.section3_start_row = 3     # Start of Graph and Checkboxes
+        self.section4_start_row = 15    # Order Radio Buttons
+        self.section5_start_row = 16    # Start of Graph and Checkboxes
+
+        self.left_side_column = 0       # Checkboxes 
+        self.plot_start_column = 1      # Graphs
+
             
 
         # Creating the checkbuttons
-        for i in range(len(self.orders)):
-            self.checkbutton_vars.append(IntVar())
-            temp_button = ttk.Checkbutton(self, text=self.orders[i], command = self.update_plot, variable = self.checkbutton_vars[-1])
+        for i in range(len(orders)):
+            # Checkbuttons for each birth order
+            temp_button = ttk.Checkbutton(self, text=orders[i], command = self.update_plot)
+            temp_button.state(['!alternate'])
             self.age_plot_toggles.append(temp_button)
 
-        self.checkbutton_vars.append(IntVar())
-        self.bottom_at_zero = ttk.Checkbutton(self, text="zoom y-axix", command = self.update_plot, variable = self.checkbutton_vars[-1])
+        # Checkbutton for the y-zoom option
+        self.bottom_at_zero = ttk.Checkbutton(self, text="zoom y-axix", command = self.update_plot)
+        self.bottom_at_zero.state(['!alternate'])
 
+        # Creating the radiobuttons
+        for i in range(len(ages)):
+            # Radiobutton for each age range
+            temp_button = ttk.Radiobutton(self, text=ages[i], command=self.update_plot, variable= self.age_radio_var, value= i)
+            self.age_graph_toggles.append(temp_button)
+            
 
     def update_plot(self):
         # This function will update the chart to include the active plots
+
+        # This variable is based on the currently selected age radio button
+        current_age = ages[self.age_radio_var.get()]
         
         # Clear the figure
         self.figure.clf()
 
         # Update the figure canvas
         self.chart = FigureCanvasTkAgg(self.figure,self)
-        self.chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
+        self.chart.get_tk_widget().grid(column=self.plot_start_column, row=self.section3_start_row, columnspan=self.plot_span, rowspan=self.plot_span)
         
         # Update the axis with a subplot
         self.ax1 = self.figure.add_subplot(111)
@@ -73,8 +92,8 @@ class InteractivePlotter(Tk):
         for i in range(len(self.age_plot_toggles)):
             
             if 'selected' in self.age_plot_toggles[i].state():
-                self.all_data[i].plot('Year', 'Births', kind='line', legend=True, ax=self.ax1) 
-                self.legend_list.append(self.orders[i])
+                self.all_data[i][self.age_radio_var.get()].plot('Year', 'Births', kind='line', legend=True, ax=self.ax1) 
+                self.legend_list.append(orders[i])
                 self.ax1.legend(self.legend_list)
 
                 if 'selected' not in self.bottom_at_zero.state():
@@ -86,65 +105,65 @@ class InteractivePlotter(Tk):
         # Create the structure of widgets inside the main window
         print("running make_window")
         
-        # Placing the plot toggle radio buttons in the window
-        i = self.age_toggle_top_row
-        for radiobutton in self.age_plot_toggles:
-            radiobutton.grid(column=0, row=i)
+        # Placing the graph toggle radio button in the window
+        i = 0
+        for radiobutton in self.age_graph_toggles:
+            radiobutton.grid(column= self.left_side_column + i, row= self.section2_start_row)
+            i+=1
+
+        # Placing the plot toggle check buttons in the window
+        i = 0
+        for checkbutton in self.age_plot_toggles:
+            checkbutton.grid(column=self.left_side_column, row= self.section3_start_row+i)
             i+=1
 
         # Placing the bottom-at-zero checkbox
-        self.bottom_at_zero.grid(column = 0, row=0)
+        self.bottom_at_zero.grid(column = self.left_side_column, row=self.section1_start_row)
 
         # Create the space for the plots
-        self.figure = plt.Figure(figsize=(11,5), dpi=100)
+        self.figure = plt.Figure(figsize=(8,5), dpi=100)
         self.ax1 = self.figure.add_subplot(111)
         self.ax1.set_title('Births per Year')
         self.chart = FigureCanvasTkAgg(self.figure,self)
-        self.chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
+        self.chart.get_tk_widget().grid(column=self.plot_start_column, row=self.section3_start_row, columnspan=self.plot_span, rowspan=self.plot_span)
 
 
     def make_plot_data(self, birth_df):
 
         self.all_data = []
 
-        for i in range(len(self.orders)):
-            self.all_data.append(birth_df[(birth_df['Birth Order'] == self.orders[i]) & (birth_df['Age Group'] == 'All ages')])
+        for i in range(len(orders)):
+            temp_list = []
+            for j in range(len(ages)):
+                temp_list.append(birth_df[(birth_df['Birth Order'] == orders[i]) & (birth_df['Age Group'] == ages[j])])
+            self.all_data.append(temp_list)
 
+        # if False:
+        #     # Ask user for desired birth order
+        #     order = int(input("What birth order would you like to plot?\n 0 = Total\n 1 = 1st Born\n 2 = 2nd Born\n 3 = 3rd Born\n 4 = 4th Born\n 5 = 5th Born\n 6 = 6th Born\n 7 = 7th Born\n 8 = 8th child and over\n 9 = Not Stated\n Enter the cooresponding number (0-9)\n "))
 
-        # Create sub-dataframes for separate age plots
-        # First = Births[(Births['Birth Order'] == '1st Born') & (Births['Age Group'] == ages[age])]
-        # Second = Births[(Births['Birth Order'] == '2nd Born') & (Births['Age Group'] == ages[age])]
-        # Third = Births[(Births['Birth Order'] == '3rd Born') & (Births['Age Group'] == ages[age])]
-        # Fourth = Births[(Births['Birth Order'] == '4th Born') & (Births['Age Group'] == ages[age])]
-        # Fifth = Births[(Births['Birth Order'] == '5th Born') & (Births['Age Group'] == ages[age])]
-        # Sixth = Births[(Births['Birth Order'] == '6th Born') & (Births['Age Group'] == ages[age])]
+        #     # Create sub-dataframes for separate birth order plots
 
-        if False:
-            # Ask user for desired birth order
-            order = int(input("What birth order would you like to plot?\n 0 = Total\n 1 = 1st Born\n 2 = 2nd Born\n 3 = 3rd Born\n 4 = 4th Born\n 5 = 5th Born\n 6 = 6th Born\n 7 = 7th Born\n 8 = 8th child and over\n 9 = Not Stated\n Enter the cooresponding number (0-9)\n "))
+        #     Under_fifteen = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == 'Under 15')]
+        #     Late_teens = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '15-19')]
+        #     Early_twenties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '20-24')]
+        #     Late_twenties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '25-29')]
+        #     Early_thirties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '30-34')]
+        #     Late_thirties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '35-39')]
 
-            # Create sub-dataframes for separate birth order plots
-
-            Under_fifteen = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == 'Under 15')]
-            Late_teens = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '15-19')]
-            Early_twenties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '20-24')]
-            Late_twenties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '25-29')]
-            Early_thirties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '30-34')]
-            Late_thirties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '35-39')]
-
-            # Plot separate birth orders dataframes
-            plt.figure(figsize=(15,8))
-            plt.plot(Under_fifteen.Year, Under_fifteen.Births, '.:r')
-            plt.plot(Late_teens.Year, Late_teens.Births, '.:b')
-            plt.plot(Early_twenties.Year, Early_twenties.Births, '.:g')
-            plt.plot(Late_twenties.Year, Late_twenties.Births, '.:y')
-            plt.plot(Early_thirties.Year, Early_thirties.Births, '.:')
-            plt.plot(Late_thirties.Year, Late_thirties.Births, '.:')
-            plt.title("Births per Year by Age Group")
-            plt.xlabel("Year")
-            plt.ylabel("Births")
-            plt.grid()
-            plt.show()
+        #     # Plot separate birth orders dataframes
+        #     plt.figure(figsize=(15,8))
+        #     plt.plot(Under_fifteen.Year, Under_fifteen.Births, '.:r')
+        #     plt.plot(Late_teens.Year, Late_teens.Births, '.:b')
+        #     plt.plot(Early_twenties.Year, Early_twenties.Births, '.:g')
+        #     plt.plot(Late_twenties.Year, Late_twenties.Births, '.:y')
+        #     plt.plot(Early_thirties.Year, Early_thirties.Births, '.:')
+        #     plt.plot(Late_thirties.Year, Late_thirties.Births, '.:')
+        #     plt.title("Births per Year by Age Group")
+        #     plt.xlabel("Year")
+        #     plt.ylabel("Births")
+        #     plt.grid()
+        #     plt.show()
 
     def load_data(self, file_loc):
         # Read in the .csv data
