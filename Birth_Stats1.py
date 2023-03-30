@@ -27,16 +27,17 @@ class InteractivePlotter(Tk):
         super().__init__()
 
         # Define window attributes
-        self.title("Birth Stats Plotter")
-        self.geometry("1100x600")
-        self.gridWidth = 11
-        self.gridHeight = 11
+        self.title("Birth Stats Plotter")   # Window title
+        self.geometry("1100x600")           # Window size
+        self.gridWidth = 11                 # Number of columns
+        self.gridHeight = 11                # Number of rows
 
         # Define widget properties
         self.age_graph_toggles = []     # A list of Radio buttons for changing age of the graph
         self.age_plot_toggles = []      # A list of check buttons for changing plotted data
-        self.plot_span = 10
-        self.age_radio_var = IntVar()
+        self.plot_span = 10             # Number of columns the graph should span
+        self.age_radio_var = IntVar()   # Varable for the age range radio buttons
+        
 
         # Define rows and columns
         self.title_start_row = 0
@@ -48,6 +49,10 @@ class InteractivePlotter(Tk):
 
         self.left_side_column = 0       # Checkboxes 
         self.plot_start_column = 1      # Graphs
+        self.start_date_label_column = 2       # Start Date Label
+        self.start_date_column = 3      # Start Date Text Box
+        self.end_date_label_column = 4         # End Date Label
+        self.end_date_column = 5        # End Date Text Box
 
             
 
@@ -67,6 +72,14 @@ class InteractivePlotter(Tk):
             # Radiobutton for each age range
             temp_button = ttk.Radiobutton(self, text=ages[i], command=self.update_plot, variable= self.age_radio_var, value= i)
             self.age_graph_toggles.append(temp_button)
+
+        # Create text entry boxes for date range input
+        self.start_date = ttk.Entry(self, width = 19)
+        self.end_date = ttk.Entry(self, width = 19)
+
+        # Create labels for the date range text entry boxes
+        self.start_date_label = ttk.Label(text= 'Start Date')
+        self.end_date_label = ttk.Label(text= 'End Date')
             
 
     def update_plot(self):
@@ -98,8 +111,6 @@ class InteractivePlotter(Tk):
 
                 if 'selected' not in self.bottom_at_zero.state():
                     self.ax1.set_ylim(bottom=0)
-                
-
 
     def make_window(self):
         # Create the structure of widgets inside the main window
@@ -127,6 +138,14 @@ class InteractivePlotter(Tk):
         self.chart = FigureCanvasTkAgg(self.figure,self)
         self.chart.get_tk_widget().grid(column=self.plot_start_column, row=self.section3_start_row, columnspan=self.plot_span, rowspan=self.plot_span)
 
+        # Place the date range text boxes
+        self.start_date.grid(column= self.start_date_column, row= self.section1_start_row)
+        self.end_date.grid(column= self.end_date_column, row= self.section1_start_row)
+
+        # Place the date range labels
+        self.start_date_label.grid(column= self.start_date_label_column, row= self.section1_start_row)
+        self.end_date_label.grid(column= self.end_date_label_column, row= self.section1_start_row)
+
 
     def make_plot_data(self, birth_df):
 
@@ -138,32 +157,6 @@ class InteractivePlotter(Tk):
                 temp_list.append(birth_df[(birth_df['Birth Order'] == orders[i]) & (birth_df['Age Group'] == ages[j])])
             self.all_data.append(temp_list)
 
-        # if False:
-        #     # Ask user for desired birth order
-        #     order = int(input("What birth order would you like to plot?\n 0 = Total\n 1 = 1st Born\n 2 = 2nd Born\n 3 = 3rd Born\n 4 = 4th Born\n 5 = 5th Born\n 6 = 6th Born\n 7 = 7th Born\n 8 = 8th child and over\n 9 = Not Stated\n Enter the cooresponding number (0-9)\n "))
-
-        #     # Create sub-dataframes for separate birth order plots
-
-        #     Under_fifteen = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == 'Under 15')]
-        #     Late_teens = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '15-19')]
-        #     Early_twenties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '20-24')]
-        #     Late_twenties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '25-29')]
-        #     Early_thirties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '30-34')]
-        #     Late_thirties = Births[(Births['Birth Order'] == orders[order]) & (Births['Age Group'] == '35-39')]
-
-        #     # Plot separate birth orders dataframes
-        #     plt.figure(figsize=(15,8))
-        #     plt.plot(Under_fifteen.Year, Under_fifteen.Births, '.:r')
-        #     plt.plot(Late_teens.Year, Late_teens.Births, '.:b')
-        #     plt.plot(Early_twenties.Year, Early_twenties.Births, '.:g')
-        #     plt.plot(Late_twenties.Year, Late_twenties.Births, '.:y')
-        #     plt.plot(Early_thirties.Year, Early_thirties.Births, '.:')
-        #     plt.plot(Late_thirties.Year, Late_thirties.Births, '.:')
-        #     plt.title("Births per Year by Age Group")
-        #     plt.xlabel("Year")
-        #     plt.ylabel("Births")
-        #     plt.grid()
-        #     plt.show()
 
     def load_data(self, file_loc):
         # Read in the .csv data
@@ -185,18 +178,6 @@ class InteractivePlotter(Tk):
 
 
         return Births
-
-    # def insert_plot(self):
-    #     print("inserting plot")
-    #     # for now, insert a random plot on the frame
-    #     data1 = {'country': ['A', 'B', 'C', 'D', 'E'],
-    #      'gdp_per_capita': [45000, 42000, 52000, 49000, 47000]
-    #      }
-    #     df1 = pd.DataFrame(data1)
-    #     chart = FigureCanvasTkAgg(self.figure,self)
-    #     chart.get_tk_widget().grid(column=self.age_plot_column, row=self.age_plot_row, columnspan=self.plot_span, rowspan=self.plot_span)
-    #     df1 = df1[['country', 'gdp_per_capita']].groupby('country').sum()
-    #     df1.plot(kind='bar', legend=True, ax=self.ax1)
 
 
 if __name__ == "__main__":
