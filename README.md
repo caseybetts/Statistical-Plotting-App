@@ -34,3 +34,10 @@ The two horizontal rows of radio buttons will are used to select the subset of d
 The bottom graph simply swaps the radio buttons and the checkboxes of the first graph so that there are two options for seeing data plotted together on the same graph. 
 
 The text boxes at the top can be used to limit the plotted time range on the x-axis. Accepted values for thes are years between 1965 and 2022.
+
+
+## Libraries and Requirements
+- Python 3
+- Matplotlib
+- Pandas
+- Tkinter
