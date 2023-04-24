@@ -26,4 +26,18 @@ And these age range fields which break down the total (All ages) number of birth
 The given .csv file also contains the following fields, however, these are optional and are not used in this tool: 15-17, 18-19, 15, 16, 17, 18, 19
 
 ## App Interface
-![Screenshot]()
+![Screenshot](https://github.com/caseybetts/Statistical-Plotting-App/blob/main/Screenshot.JPG)
+
+### Interface Description
+The two horizontal rows of radio buttons will are used to select the subset of data displayed on the plot below them. The checkboxes on the left side of each plot can be used to toggle a subset of the data onto the plot. The radio buttons apply to all the data on the plot. The checkboxes add a single line graph to the plot, therefore checking more boxes will add multiple plots to the graph. 
+
+The bottom graph simply swaps the radio buttons and the checkboxes of the first graph so that there are two options for seeing data plotted together on the same graph. 
+
+The text boxes at the top can be used to limit the plotted time range on the x-axis. Accepted values for thes are years between 1965 and 2022.
+
+
+## Libraries and Requirements
+- Python 3
+- Matplotlib
+- Pandas
+- Tkinter
