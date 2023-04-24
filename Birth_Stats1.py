@@ -69,15 +69,15 @@ class InteractivePlotter(Tk):
             
 
         # Creating the checkbuttons
-        for i in range(len(orders)):
+        for order in orders:
             # Checkbuttons for each birth order
-            temp_button = ttk.Checkbutton(self, text=orders[i], command = self.update_plot_a)
+            temp_button = ttk.Checkbutton(self, text=order, command = self.update_plot_a)
             temp_button.state(['!alternate'])
             self.age_plot_toggles.append(temp_button)
 
-        for i in range(len(ages)):
+        for age_range in ages:
             # Checkbuttons for each age range
-            temp_button = ttk.Checkbutton(self, text=ages[i], command = self.update_plot_b)
+            temp_button = ttk.Checkbutton(self, text=age_range, command = self.update_plot_b)
             temp_button.state(['!alternate'])
             self.order_plot_toggles.append(temp_button)
 
@@ -86,14 +86,14 @@ class InteractivePlotter(Tk):
         self.bottom_at_zero.state(['!alternate'])
 
         # Creating the radiobuttons
-        for i in range(len(ages)):
+        for index, age_range in enumerate(ages):
             # Radiobutton for each age range
-            temp_button = ttk.Radiobutton(self, text=ages[i], command=self.update_plot_a, variable= self.age_radio_var, value= i)
+            temp_button = ttk.Radiobutton(self, text=age_range, command=self.update_plot_a, variable= self.age_radio_var, value= index)
             self.age_graph_toggles.append(temp_button)
 
-        for i in range(len(orders)):
+        for index, order in enumerate(orders):
             # Radiobutton for each birth order
-            temp_button = ttk.Radiobutton(self, text=orders[i], command=self.update_plot_b, variable= self.order_radio_var, value= i)
+            temp_button = ttk.Radiobutton(self, text=order, command=self.update_plot_b, variable= self.order_radio_var, value= index)
             self.order_graph_toggles.append(temp_button)
 
         # Create text entry boxes for date range input
@@ -125,11 +125,11 @@ class InteractivePlotter(Tk):
         self.legend_list_a = []
 
         # Plot data if the checkbox is selected
-        for i in range(len(self.age_plot_toggles)):
+        for index, toggle in enumerate(self.age_plot_toggles):
             
-            if 'selected' in self.age_plot_toggles[i].state():
-                self.all_data[i][self.age_radio_var.get()].plot('Year', 'Births', kind='line', legend=True, ax=self.ax_a) 
-                self.legend_list_a.append(orders[i])
+            if 'selected' in toggle.state():
+                self.all_data[index][self.age_radio_var.get()].plot('Year', 'Births', kind='line', legend=True, ax=self.ax_a) 
+                self.legend_list_a.append(orders[index])
                 self.ax_a.legend(self.legend_list_a)
 
                 if 'selected' not in self.bottom_at_zero.state():
@@ -155,11 +155,11 @@ class InteractivePlotter(Tk):
         self.legend_list_b = []
 
         # Plot data if the checkbox is selected
-        for i in range(len(self.order_plot_toggles)):
+        for index, toggle in enumerate(self.order_plot_toggles):
             
-            if 'selected' in self.order_plot_toggles[i].state():
-                self.all_data[self.order_radio_var.get()][i].plot('Year', 'Births', kind='line', legend=True, ax=self.ax_b) 
-                self.legend_list_b.append(ages[i])
+            if 'selected' in toggle.state():
+                self.all_data[self.order_radio_var.get()][index].plot('Year', 'Births', kind='line', legend=True, ax=self.ax_b) 
+                self.legend_list_b.append(ages[index])
                 self.ax_b.legend(self.legend_list_b)
 
                 if 'selected' not in self.bottom_at_zero.state():
@@ -221,10 +221,10 @@ class InteractivePlotter(Tk):
 
         self.all_data = []
 
-        for i in range(len(orders)):
+        for order in orders:
             temp_list = []
-            for j in range(len(ages)):
-                temp_list.append(birth_df[(birth_df['Birth Order'] == orders[i]) & (birth_df['Age Group'] == ages[j])])
+            for age_range in ages:
+                temp_list.append(birth_df[(birth_df['Birth Order'] == order) & (birth_df['Age Group'] == age_range)])
             self.all_data.append(temp_list)
     
 
